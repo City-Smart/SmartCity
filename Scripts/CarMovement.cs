@@ -2,78 +2,57 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    public Rigidbody rb;                // Rigidbody per la fisica della macchina
+    public WheelCollider frontLeftCollider;
+    public WheelCollider frontRightCollider;
+    public WheelCollider rearLeftCollider;
+    public WheelCollider rearRightCollider;
 
+    public Transform frontLeftVisual;
+    public Transform frontRightVisual;
+    public Transform rearLeftVisual;
+    public Transform rearRightVisual;
 
-    public Transform frontLeftTransform;
-    public Transform frontRightTransform;
-    public Transform rearLeftTransform;
-    public Transform rearRightTransform;
+    public float motorForce = 1500f;
+    public float steeringAngle = 30f;
 
-    public float maxSteeringAngle = 30f; // Angolo massimo di sterzata
-    public float motorForce = 1500f;      // Forza del motore
-    public float brakeForce = 3000f;      // Forza dei freni
-    public float acceleration = 0f;       // Accelerazione
-    public float steering = 0f;           // Direzione di sterzata
-    public float maxSpeed = 50f;          // Velocità massima
-    private float currentSpeed = 0f;      // Velocità corrente
+    private Rigidbody rb;
 
-
-    void Update()
+    void Start()
     {
-        // Ottieni input di sterzata e accelerazione
-        steering = Input.GetAxis("Horizontal") * maxSteeringAngle;
-        acceleration = Input.GetAxis("Vertical");
-
-        // Aggiorna l'angolo di sterzata delle ruote anteriori
-        frontLeftTransform.localRotation = Quaternion.Euler(0f, steering, 0f);
-        frontRightTransform.localRotation = Quaternion.Euler(0f, steering, 0f);
-
-        // Applica accelerazione e frenata
-        if (acceleration > 0)
-        {
-            currentSpeed = Mathf.Clamp(currentSpeed + acceleration * motorForce * Time.deltaTime, -maxSpeed, maxSpeed);
-        }
-        if (acceleration == 0)
-        {
-            currentSpeed = Mathf.Clamp(currentSpeed - ((motorForce * Time.deltaTime) / currentSpeed), 0, maxSpeed);
-        }
-        else if (acceleration < 0)
-        {
-            currentSpeed = Mathf.Clamp(currentSpeed + acceleration * brakeForce * Time.deltaTime, -maxSpeed, maxSpeed);
-        }
-
-        Vector3 forwardMovement = transform.forward * currentSpeed;
-        rb.velocity = new Vector3(forwardMovement.x, rb.velocity.y, forwardMovement.z);
-
-
-        // Limitare la velocità massima
-        if (rb.velocity.magnitude > maxSpeed)
-        {
-            rb.velocity = rb.velocity.normalized * maxSpeed;
-        }
-
-        // Gestire la rotazione del corpo della macchina (solo sterzata)
-        float turnAmount = steering * Time.deltaTime * currentSpeed;
-        transform.Rotate(0f, turnAmount, 0f);
+        rb = GetComponent<Rigidbody>();
     }
 
-    void OnCollisionEnter(Collision collision)
+    void FixedUpdate()
     {
-        // Controlla se il GameObject con cui hai colliso ha il tag "marciapiede"
-        if (collision.gameObject.CompareTag("marciapiede"))
-        {
-            Debug.Log("Fuori strada! Penalizzo l'agente");
-        }
+        // Ottieni input
+        float acceleration = Input.GetAxis("Vertical");
+        float steering = Input.GetAxis("Horizontal");
 
-        if (collision.gameObject.CompareTag("macchina"))
-        {
-            Debug.Log("Tamponamento! Penalizzo l'agente");
-        }
+        // Applica forza alle ruote posteriori per simulare il motore
+        rearLeftCollider.motorTorque = acceleration * motorForce;
+        rearRightCollider.motorTorque = acceleration * motorForce;
 
-        if (collision.gameObject.CompareTag("parcheggio") && acceleration == 0)
-        {
-            Debug.Log("Parcheggio completato! Ricompenso l'agente");
-        }
+        // Applica l'angolo di sterzata alle ruote anteriori
+        frontLeftCollider.steerAngle = steering * steeringAngle;
+        frontRightCollider.steerAngle = steering * steeringAngle;
+
+        // Aggiorna la posizione e rotazione delle ruote visive
+        UpdateWheelPose(frontLeftCollider, frontLeftVisual);
+        UpdateWheelPose(frontRightCollider, frontRightVisual);
+        UpdateWheelPose(rearLeftCollider, rearLeftVisual);
+        UpdateWheelPose(rearRightCollider, rearRightVisual);
+    }
+
+    private void UpdateWheelPose(WheelCollider collider, Transform visualTransform)
+    {
+        Vector3 position;
+        Quaternion rotation;
+
+        // Ottieni la posizione e la rotazione attuale del WheelCollider
+        collider.GetWorldPose(out position, out rotation);
+
+        // Sincronizza il modello visivo
+        visualTransform.position = position;
+        visualTransform.rotation = rotation;
     }
 }
