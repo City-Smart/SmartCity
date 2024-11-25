@@ -15,6 +15,8 @@ public class CarController : MonoBehaviour
     public float motorForce = 1500f;
     public float steeringAngle = 30f;
 
+    public bool parked = false;
+
     private Rigidbody rb;
 
     void Start()
@@ -26,7 +28,7 @@ public class CarController : MonoBehaviour
     {
         // Ottieni input
         float acceleration = Input.GetAxis("Vertical");
-        float steering = Input.GetAxis("Horizontal");
+        float steering = Input.GetAxis("Horizontal");   
 
         // Applica forza alle ruote posteriori per simulare il motore
         rearLeftCollider.motorTorque = acceleration * motorForce;
@@ -35,6 +37,11 @@ public class CarController : MonoBehaviour
         // Applica l'angolo di sterzata alle ruote anteriori
         frontLeftCollider.steerAngle = steering * steeringAngle;
         frontRightCollider.steerAngle = steering * steeringAngle;
+
+        if(acceleration == steering && acceleration != 0) 
+        {
+            
+        }
 
         // Aggiorna la posizione e rotazione delle ruote visive
         UpdateWheelPose(frontLeftCollider, frontLeftVisual);
@@ -54,5 +61,32 @@ public class CarController : MonoBehaviour
         // Sincronizza il modello visivo
         visualTransform.position = position;
         visualTransform.rotation = rotation;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("macchina"))
+        {
+            Debug.Log("Tamponamento! Penalizzo l'agente");
+        }
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        // Ottieni la rotazione dell'oggetto con cui hai colliso
+        Quaternion originalRotation = collision.transform.rotation;
+
+        // Calcola il verso opposto della rotazione
+        Quaternion oppositeRotation = Quaternion.Inverse(originalRotation);
+
+        if (collision.gameObject.CompareTag("parcheggio") && !parked)
+        {
+            parked = true;
+            Debug.Log("Parcheggio completato! Ricompenso l'agente");
+        }
+        if (collision.gameObject.CompareTag("segnaletica"))
+        {
+            Debug.Log("Senso di marcia sbagliato! Penalizzo l'agente");
+        }
     }
 }
