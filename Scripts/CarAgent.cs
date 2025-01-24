@@ -17,7 +17,7 @@ public class CarAgent : Agent
     public Transform rearLeftVisual;
     public Transform rearRightVisual;
     
-    public float motorForce = 1500f;
+    public float motorForce = 200f;
     public float steeringAngle = 30f;
 
 
@@ -31,12 +31,7 @@ public class CarAgent : Agent
     private float signYRotation, oppositeRotation;
     private int timer = 0;
 
-    // Esempio di mappatura
-    private Dictionary<string, float> tagToValue = new Dictionary<string, float>()
-    {
-        { "gatto", 1f },
-        { "macchina", 2f }
-    };
+    private HashSet<int> rewardedObjectIds = new HashSet<int>();
 
     private float distanceToTarget, fromStartToTarget;
     private float acceleration, steering;
@@ -58,10 +53,10 @@ public class CarAgent : Agent
         distanceToTarget = Vector3.Distance(updatedPosition, targetObject.position);
         fromStartToTarget = Vector3.Distance(startingPosition, targetObject.position);
 
-        // Penalità ogni mezzo secondo in cui l'agente rimane fermo
-        if (timer % 30 == 0 && rb.velocity == Vector3.zero)
+        // Penalità ogni mezzo secondo in cui l'agente non accelera
+        if (timer % 30 == 0 && acceleration <=0.35f)
         {
-            AddReward(-0.1f);
+            AddReward(-1f);
         }
     }
     
@@ -114,26 +109,37 @@ public class CarAgent : Agent
     
     void OnTriggerEnter(Collider collision)
     {
-        if (collision.gameObject.CompareTag("strada") && acceleration >= 0.9f)
-        {
-            AddReward((fromStartToTarget - distanceToTarget) * 0.01f);
-        }
         // Controlla se il GameObject con cui hai colliso ha il tag "marciapiede"
-        if (collision.gameObject.CompareTag("marciapiede"))
+        if (collision.gameObject.CompareTag("marciapiede") && acceleration >= 0)
         {
             isOnSidewalk = true;
-            AddReward(-5f);
+            AddReward(-5f * (acceleration + 1));
             Debug.Log("Fuori strada! Penalizzo l'agente");
         }
         if (collision.gameObject.CompareTag("gatto"))
         {
-            AddReward(-35f);
+            AddReward(-60f);
             Debug.Log("Gatto investito! Penalizzo l'agente");
         }
         if (collision.gameObject.CompareTag("acqua"))
         {
             AddReward(-100f);
+            Debug.Log("In acqua! Penalizzo l'agente");
             EndEpisode();
+        }
+        int objectId = collision.gameObject.GetInstanceID();
+
+        // Check if this object has already been rewarded
+        if (rewardedObjectIds.Contains(objectId))
+        {
+            return; // Exit if already rewarded
+        }
+
+        rewardedObjectIds.Add(objectId);
+
+        if (collision.gameObject.CompareTag("strada") && acceleration >= 0.75f)
+        {
+            AddReward(3f);
         }
     }
 
@@ -173,8 +179,7 @@ public class CarAgent : Agent
         }
         if (collision.gameObject.CompareTag("macchina"))
         {
-            timer = 0;
-            AddReward(-20f);
+            AddReward(-80f);
             Debug.Log("Tamponamento! Penalizzo l'agente");
             EndEpisode();
         }
@@ -190,8 +195,7 @@ public class CarAgent : Agent
         }
         if (collision.gameObject.CompareTag("macchina"))
         {
-            timer = 0;
-            AddReward(-25f);
+            AddReward(-80f);
             Debug.Log("Tamponamento! Penalizzo l'agente");
             EndEpisode();
         }
@@ -211,6 +215,8 @@ public class CarAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        rewardedObjectIds.Clear();
+
         parked = false;
 
         // Reset della posizione della macchina
@@ -264,16 +270,16 @@ public class CarAgent : Agent
         // Applica forza alle ruote posteriori per simulare il motore
         rearLeftCollider.motorTorque = acceleration * motorForce;
         rearRightCollider.motorTorque = acceleration * motorForce;
-
-        if (acceleration < 0)
-        {
-            AddReward(-0.05f);
-        }
+        
         if (steering != 0)
         {
             AddReward(-0.05f);
         }
-        if (acceleration >= 0.75f) 
+        if (steering != 0 && acceleration >= 0)
+        {
+            AddReward(-0.05f);
+        }
+        if (acceleration >= 0.7f) 
         {
             AddReward(0.0001f);
         }
