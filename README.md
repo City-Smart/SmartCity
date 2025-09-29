@@ -51,7 +51,7 @@ Crea un virtual environment:
 
 ```bash
     conda create --name mlagents --file requirements.txt
-    ```
+```
 ### 3.3 Importare il progetto in Unity
 
 1. Avvia Unity Hub e seleziona **Add**
@@ -124,10 +124,10 @@ Crea un virtual environment:
 ## 8. Galleria
 
 <p align="center">
-<img src="Images/ParcheggioPizzeria.jpg">
+<img src="https://raw.githubusercontent.com/City-Smart/SmartCity/refs/heads/main/Images/ParcheggioPizzeria.jpg">
 </p>
 <p align="center">
-<img src="Images/ParcheggioPizzeriaRaycasts.jpg">
+<img src="https://raw.githubusercontent.com/City-Smart/SmartCity/refs/heads/main/Images/ParcheggioPizzeriaRaycasts.jpg">
 </p>
 ---
 
