@@ -1,0 +1,25 @@
+behaviors:
+  CarBehavior:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 10 # Il numero di esperienze utilizzate per calcolare un singolo aggiornamento della rete neurale
+      buffer_size: 100 # La dimensione della memoria esperienziale (replay buffer)
+      learning_rate: 3.0e-4 # Il tasso di apprendimento dell'ottimizzatore
+      beta: 5.0e-4 #  Coefficiente per la regolarizzazione dell'entropia, che aiuta ad esplorare nuove strategie riducendo il sovradattamento
+      epsilon: 0.2 # Clipping del rapporto di probabilità per limitare grandi aggiornamenti della policy, mantenendo la stabilità dell'allenamento
+      lambd: 0.99 # Fattore di vantaggio GAE (Generalized Advantage Estimation). Valore alto = maggiore dipendenza dalla stima a lungo termine
+      num_epoch: 3 # Numero di volte in cui ogni batch di dati viene utilizzato per aggiornare la policy in un singolo ciclo di addestramento
+      learning_rate_schedule: linear # Il tasso di apprendimento diminuisce linearmente nel tempo
+      beta_schedule: constant # La regolarizzazione dell'entropia rimane costante
+      epsilon_schedule: linear # Il valore di epsilon diminuisce nel tempo, riducendo gradualmente l'esplorazione
+    network_settings: 
+      normalize: false # I dati di input non vengono normalizzati
+      hidden_units: 128 # Numero di neuroni per ogni layer nascosto
+      num_layers: 2 # Due livelli nascosti nella rete neurale
+    reward_signals:
+      extrinsic:
+        gamma: 0.99 # Fattore di sconto per la ricompensa futura. Valore alto = il modello considera ricompense a lungo termine
+        strength: 1.0 # Peso della ricompensa estrinseca
+    max_steps: 10000000 # Numero massimo di passaggi di addestramento
+    time_horizon: 32 # Numero massimo di esperienze prima che venga eseguito un aggiornamento
+    summary_freq: 10000 # Frequenza con cui vengono registrati i dati nei log di TensorBoard

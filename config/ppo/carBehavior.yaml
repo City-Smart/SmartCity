@@ -1,0 +1,25 @@
+behaviors: 
+  CarBehavior: 
+    trainer_type: ppo 
+    hyperparameters: 
+      batch_size: 128 # Il numero di esperienze utilizzate per calcolare un singolo aggiornamento della rete neurale 
+      buffer_size: 1024 # La dimensione della memoria esperienziale
+      learning_rate: 3e-4 # Il tasso di apprendimento dell'ottimizzatore 
+      beta: 2e-3 # Coefficiente per la regolarizzazione dell'entropia, che aiuta ad esplorare nuove strategie riducendo il sovradattamento 
+      epsilon: 0.2 # Clipping del rapporto di probabilità per limitare grandi aggiornamenti della policy, mantenendo la stabilità dell'allenamento 
+      lambd: 0.95 # Fattore di vantaggio GAE (Generalized Advantage Estimation). Valore alto = maggiore dipendenza dalla stima a lungo termine 
+      num_epoch: 4 # Numero di volte in cui ogni batch di dati viene utilizzato per aggiornare la policy in un singolo ciclo di addestramento 
+      learning_rate_schedule: linear # Il tasso di apprendimento diminuisce linearmente nel tempo 
+      beta_schedule: constant # La regolarizzazione dell'entropia rimane costante 
+      epsilon_schedule: linear # Il valore di epsilon diminuisce nel tempo, riducendo gradualmente l'esplorazione 
+    network_settings:  
+      normalize: true # I dati di input non vengono normalizzati 
+      hidden_units: 128 # Numero di neuroni per ogni layer nascosto 
+      num_layers: 2 # Due livelli nascosti nella rete neurale 
+    reward_signals: 
+      extrinsic: 
+        gamma: 0.99 
+        strength: 1.0 # Disattiva la ricompensa estrinseca per non influenzare l'apprendimento 
+    max_steps: 2000000 
+    time_horizon: 32 
+    summary_freq: 5000 # Frequenza di salvataggio dei riassunti per il monitoraggio dell'allenamento
