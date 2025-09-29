@@ -66,7 +66,7 @@ Crea un virtual environment:
     - Le **Actions** permettano controllo della sterzata, accelerazione e frenata.
 ## 5. Training con ML-Agents
 
-1. Verifica il file `config/ppo/carBehavior.yaml` contiene è composto come segue:
+1. Verifica che il file `config/ppo/carBehavior.yaml` sia costruito come segue:
     ```yaml
 	behaviors:
 	  CarBehavior:
